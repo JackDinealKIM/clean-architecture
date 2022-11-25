@@ -19,9 +19,9 @@ Future<void> init() async {
   //! Features - Number Trivia
   sl.registerFactory(
     () => NumberTriviaBloc(
-      concrete: sl(),
-      random: sl(),
       inputConverter: sl(),
+      getConcreteNumberTrivia: sl(),
+      getRandomNumberTrivia: sl(),
     ),
   );
 

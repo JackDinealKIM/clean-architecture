@@ -11,10 +11,10 @@ class GetTriviaForConcreteNumber extends NumberTriviaEvent {
   GetTriviaForConcreteNumber(this.numberString);
 
   @override
-  List<Object?> get props => [];
+  List<Object> get props => [this.numberString];
 }
 
 class GetTriviaForRandomNumber extends NumberTriviaEvent {
   @override
-  List<Object?> get props => [];
+  List<Object> get props => [];
 }

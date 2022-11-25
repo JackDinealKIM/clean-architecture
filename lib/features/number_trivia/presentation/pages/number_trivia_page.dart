@@ -22,43 +22,38 @@ class NumberTriviaPage extends StatelessWidget {
     );
   }
 
-  BlocProvider<NumberTriviaBloc> buildBody(BuildContext context) {
-    return BlocProvider(
-      create: (_) => sl<NumberTriviaBloc>(),
-      child: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(10),
-          child: Column(
-            children: <Widget>[
-              SizedBox(height: 10),
-              // Top half
-              BlocBuilder<NumberTriviaBloc, NumberTriviaState>(
-                builder: (context, state) {
-                  if (state is Empty) {
-                    return MessageDisplay(
-                      message: 'Start searching!',
-                    );
-                  } else if (state is Loading) {
-                    return LoadingWidget();
-                  } else if (state is Loaded) {
-                    return TriviaDisplay(
-                      numberTrivia: state.trivia,
-                    );
-                  } else if (state is Error) {
-                    return MessageDisplay(
-                      message: state.message,
-                    );
-                  }
+  Widget buildBody(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(10),
+        child: Column(
+          children: <Widget>[
+            SizedBox(height: 10),
+            // Top half
+            BlocBuilder<NumberTriviaBloc, NumberTriviaState>(
+              builder: (_, state) {
+                if (state is Empty) {
                   return MessageDisplay(
-                    message: '',
+                    message: 'Start searching!',
                   );
-                },
-              ),
-              SizedBox(height: 20),
-              // Bottom half
-              TriviaControls(),
-            ],
-          ),
+                } else if (state is Loading) {
+                  return LoadingWidget();
+                } else if (state is Loaded) {
+                  return TriviaDisplay(
+                    numberTrivia: state.trivia,
+                  );
+                } else if (state is Error) {
+                  return MessageDisplay(
+                    message: state.message,
+                  );
+                }
+                return Container();
+              },
+            ),
+            SizedBox(height: 20),
+            // Bottom half
+            TriviaControls(),
+          ],
         ),
       ),
     );
@@ -72,7 +67,7 @@ class TriviaControls extends StatefulWidget {
 
 class _TriviaControlsState extends State<TriviaControls> {
   final controller = TextEditingController();
-  late String inputStr;
+  String inputStr = "1";
 
   @override
   Widget build(BuildContext context) {

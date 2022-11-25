@@ -26,53 +26,35 @@ class NumberTriviaBloc extends Bloc<NumberTriviaEvent, NumberTriviaState> {
   final InputConverter inputConverter;
 
   NumberTriviaBloc({
-    // Changed the name of the constructor parameter (cannot use 'this.')
-    required GetConcreteNumberTrivia concrete,
-    required GetRandomNumberTrivia random,
+    required this.getConcreteNumberTrivia,
+    required this.getRandomNumberTrivia,
     required this.inputConverter,
-    // Asserts are how you can make sure that a passed in argument is not null.
-    // We omit this elsewhere for the sake of brevity.
-  })  : assert(concrete != null),
-        assert(random != null),
-        assert(inputConverter != null),
-        getConcreteNumberTrivia = concrete,
-        getRandomNumberTrivia = random,
-        super(Empty());
+  }) : super(Empty()) {
+    on<NumberTriviaEvent>((event, emit) async {
+      if (event is GetTriviaForConcreteNumber) {
+        print('GetTriviaForConcreteNumber: $event');
+        final inputEither = inputConverter.stringToUnsignedInteger(event.numberString);
 
-  @override
-  NumberTriviaState get initialState => Empty();
-
-  @override
-  Stream<NumberTriviaState> mapEventToState(
-    NumberTriviaEvent event,
-  ) async* {
-    if (event is GetTriviaForConcreteNumber) {
-      final inputEither = inputConverter.stringToUnsignedInteger(event.numberString);
-
-      yield* inputEither.fold(
-        (failure) async* {
-          yield Error(message: INVALID_INPUT_FAILURE_MESSAGE);
-        },
-        (integer) async* {
-          yield Loading();
-          final failureOrTrivia = await getConcreteNumberTrivia(
-            Params(number: integer),
-          );
-          yield* _eitherLoadedOrErrorState(failureOrTrivia);
-        },
-      );
-    } else if (event is GetTriviaForRandomNumber) {
-      yield Loading();
-      final failureOrTrivia = await getRandomNumberTrivia(
-        NoParams(),
-      );
-      yield* _eitherLoadedOrErrorState(failureOrTrivia);
-    }
+        inputEither.fold(
+          (failure) {
+            emit(Error(message: INVALID_INPUT_FAILURE_MESSAGE));
+          },
+          (integer) async {
+            emit(Loading());
+            final failureOrTrivia = await getConcreteNumberTrivia(Params(number: integer));
+            (await _eitherLoadedOrErrorState(failureOrTrivia).single);
+          },
+        );
+      } else if (event is GetTriviaForRandomNumber) {
+        print('GetTriviaForRandomNumber: $event');
+        emit(Loading());
+        final failureOrTrivia = await getRandomNumberTrivia(NoParams());
+        emit(await _eitherLoadedOrErrorState(failureOrTrivia).single);
+      }
+    });
   }
 
-  Stream<NumberTriviaState> _eitherLoadedOrErrorState(
-    Either<Failure, NumberTrivia> either,
-  ) async* {
+  Stream<NumberTriviaState> _eitherLoadedOrErrorState(Either<Failure, NumberTrivia> either) async* {
     yield either.fold(
       (failure) => Error(message: _mapFailureToMessage(failure)),
       (trivia) => Loaded(trivia: trivia),
